@@ -1,0 +1,22 @@
+
+beta build 1027: first public release
+
+  - Too many features, crash fixes and optimizations to know where
+    to even begin at this point.  So this is where it begins...
+
+  - Lots of stuff that still needs documenting, mainly:
+     * How to craft the Smithing Hammer and the Superior Anvil
+     * How to use the anvil with the hammer
+     * Superior Anvil Recipe list
+     * A brief introduction to Elites, possibly entitled
+         "Elite Creatures and how they will ruin your day"
+
+
+older:
+  - several dozen unversioned alpha builds during initial creation
+  - over two dozen beta builds leading to build 1027 (mostly unstable)
+  - lots of crashes leading to many 'omg it's working first try' moments
+  - generally not ready for stable server use
+      (aside from a couple of miracle builds)
+  - not enough functionality worthy of public release
+
