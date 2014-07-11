@@ -1,0 +1,67 @@
+key.RPGEquip.category=RPGEquip
+key.RPGEquipInventory.desc=RPGEquip Inventory
+
+itemGroup.tabGear=Gear
+
+/** gear :: belts **/
+item.leather_belt.name=Leather Belt
+
+/** gear :: rings **/
+item.iron_ring.name=Iron Ring
+item.gold_ring.name=Gold Ring
+item.iron_diamond_ring.name=Iron Diamond Ring
+item.gold_diamond_ring.name=Gold Diamond Ring
+item.iron_emerald_ring.name=Iron Emerald Ring
+item.gold_emerald_ring.name=Gold Emerald Ring
+item.iron_lapis_ring.name=Iron Lapis Ring
+item.gold_lapis_ring.name=Gold Lapis Ring
+item.iron_quartz_ring.name=Iron Quartz Ring
+item.gold_quartz_ring.name=Gold Quartz Ring
+item.iron_redstone_ring.name=Iron Redstone Ring
+item.gold_redstone_ring.name=Gold Redstone Ring
+item.iron_obsidian_ring.name=Iron Obsidian Ring
+item.gold_obsidian_ring.name=Gold Obsidian Ring
+
+/** gear :: amulets **/
+item.diamond_amulet.name=Diamond Amulet
+item.emerald_amulet.name=Emerald Amulet
+item.lapis_amulet.name=Lapis Amulet
+item.quartz_amulet.name=Quartz Amulet
+item.redstone_amulet.name=Redstone Amulet
+item.obsidian_amulet.name=Obsidian Amulet
+
+/** gear :: bracer **/
+item.leather_bracer.name=Leather Bracer
+item.iron_bracer.name=Iron Bracer
+item.gold_bracer.name=Gold Bracer
+item.diamond_bracer.name=Diamond Bracer
+
+/** gear :: sockets **/
+item.equipsocket_diamond.name=Diamond Gemstone
+item.equipsocket_emerald.name=Emerald Gemstone
+item.equipsocket_lapis.name=Lapis Gemstone
+item.equipsocket_quartz.name=Quartz Gemstone
+item.equipsocket_redstone.name=Redstone Gemstone
+item.equipsocket_obsidian.name=Obsidian Gemstone
+
+/** RPGAttributes **/
+attr.armor.desc=Armor
+attr.health.desc=Health
+attr.strength.desc=Strength
+attr.defense.desc=Defense
+attr.fireresist.desc=Fire Resist
+attr.magicresist.desc=Magic Resist
+attr.movement.desc=Speed
+attr.jumping.desc=Jump
+attr.socket_singular.desc=Socket
+attr.socket_plural.desc=Sockets
+
+/** Superior Anvil **/
+tile.superiorAnvil.name=Superior Anvil
+item.smithingHammer.name=Smithing Hammer
+
+/** Wands **/
+item.doom_scepter.name=Doom Scepter
+
+/** Commands **/
+commands.clear.gearinventory=Cleared gear inventory for player %s, removing %d items

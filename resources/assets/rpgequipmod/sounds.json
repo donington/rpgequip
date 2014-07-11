@@ -1,0 +1,22 @@
+{
+  "magic.fireball": {
+    "category": "hostile",
+    "sounds": [
+      "magic/fireball"
+    ]
+  },
+  "magic.shield": {
+    "category": "hostile",
+    "sounds": [
+      "magic/shield1",
+      "magic/shield2",
+      "magic/shield3"
+    ]
+  },
+  "magic.shield.hurt": {
+    "category": "hostile",
+    "sounds": [
+      "magic/shieldhurt"
+    ]
+  }
+}
