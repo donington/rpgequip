@@ -1,1 +1,8 @@
+key.Blocky3D.category = Blocky3D
+key.B3DWorldWandNext.desc = World Wand Next Region
+key.B3DWorldWandPrev.desc = World Wand Previous Region
+key.B3DWorldWandAdd.desc = World Wand Add Region
+key.B3DWorldWandRemove.desc = World Wand Remove Region
+
 item.worldWand.name=World Wand
+

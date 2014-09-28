@@ -29,8 +29,6 @@ public class EliteAIDetonate extends EntityAIBase {
 		if ( cooldown > cooldownMax ) {
 			EntityLivingBase target = entity.getAttackTarget();
 			if ( target == null ) return false;
-    		if ( !entity.canEntityBeSeen(target) ) return false;
-    		if ( target instanceof EntityPlayer && ((EntityPlayer)target).capabilities.isCreativeMode ) return false;
 			if ( entity.getDistanceToEntity(target) > range ) return false;
 			cooldown = 0;
 			return true;

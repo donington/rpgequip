@@ -12,12 +12,13 @@ import mods.minecraft.donington.rpgequip.common.entity.elite.EliteCreatureIndex;
 import mods.minecraft.donington.rpgequip.common.entity.magic.EntityMagicExplosion;
 import mods.minecraft.donington.rpgequip.common.entity.magic.EntityMagicFire;
 import mods.minecraft.donington.rpgequip.common.entity.magic.EntityMagicShield;
-import mods.minecraft.donington.rpgequip.common.item.DoomScepter;
+import mods.minecraft.donington.rpgequip.common.item.WandDoomScepter;
+import mods.minecraft.donington.rpgequip.common.item.caster.WandDeadlyForce;
 import mods.minecraft.donington.rpgequip.common.item.gear.GearRegistrationHelper;
 import mods.minecraft.donington.rpgequip.forge.EntityLivingEventHandler;
-import mods.minecraft.donington.rpgequip.network.GearInventoryPacket;
-import mods.minecraft.donington.rpgequip.network.PlayerAttributePacket;
-import mods.minecraft.donington.rpgequip.network.RPGEOpenInventoryPacket;
+import mods.minecraft.donington.rpgequip.network.packet.GearInventoryPacket;
+import mods.minecraft.donington.rpgequip.network.packet.PlayerAttributePacket;
+import mods.minecraft.donington.rpgequip.network.packet.RPGEOpenInventoryPacket;
 import mods.minecraft.donington.superioranvil.common.SuperiorAnvilProxy;
 import mods.minecraft.donington.superioranvil.common.block.SuperiorAnvil;
 import mods.minecraft.donington.superioranvil.common.item.SmithingHammer;
@@ -49,13 +50,14 @@ public class RPGECommonProxy {
   public static final int eliteAuraDataWatcherId = 29;
   public static final int eliteFuseDataWatcherId = 27;
   public static final int magicDataWatcherId = 27;
-
-  // aura stuff
-  //public static int auraCount = 8;  // this is now handled by EliteCreatureAura
+  public static final int specialDataWatcherId = 26;
 
   // elite stuff
-  public static final int eliteAggroRange = 16;     // distance until elite will begin attack
-  public static final int eliteAggroRangeMax = 32;  // distance until elite gives up pursuit
+  public static final int eliteMobAggroRange = 16;     // distance until elite will begin attack
+  public static final int eliteMobAggroRangeMax = 32;  // distance until elite gives up pursuit
+  public static final int eliteFlyingAggroRange = 24;     // distance until elite will begin attack
+  public static final int eliteFlyingAggroRangeMax = 64;  // distance until elite gives up pursuit
+
   public static final int eliteWanderRange = 48*48;       // farthest natural wander distance (squared comparison)
   public static final int eliteWanderDistance = 10;       // maximum random wander position
   public static final int eliteWanderDistanceCheck = 12;  // ensure rng is in bounds
@@ -77,6 +79,10 @@ public class RPGECommonProxy {
   public static SmithingHammer  hammer  = new SmithingHammer();
 
 
+  private void registerItem(Item item) {
+	  GameRegistry.registerItem(item, item.getUnlocalizedName());
+  }
+
 
   public void preInit(FMLPreInitializationEvent event) {
 
@@ -84,9 +90,9 @@ public class RPGECommonProxy {
     anvilProxy.commonPreInit();
     SuperiorAnvilCraftingManager.getInstance().sortRecipes();
 
-    // test item: world ending nonsense
-    Item doomScepter = new DoomScepter();
-    GameRegistry.registerItem(doomScepter, doomScepter.getUnlocalizedName());
+    // wand registration
+    registerItem(new WandDoomScepter());
+    registerItem(new WandDeadlyForce());
 
     // magic!
     RPGEquipMod.registerEntity(EntityMagicFire.class, "magic_fire");
@@ -97,12 +103,12 @@ public class RPGECommonProxy {
     new EliteCreatureIndex();  // instantiate the elite creature index
 
     // EntityMob derivative
-    RPGEquipMod.registerEntity(EntityEliteMob.class, "eliteMob", 0, Color.MAGENTA.getRGB());
+    RPGEquipMod.registerEntity(EntityEliteMob.class, "eliteMob", Color.decode("#A0803F").getRGB(), Color.decode("#0F10A0").getRGB());
     EntityRegistry.addSpawn(EntityEliteMob.class, 1, 1, 1, EnumCreatureType.monster);
 
-    // EntityFlying derivative (disabled for now, source of most crashes at the moment)
-    //RPGEquipMod.registerEntity(EntityEliteFlying.class, "eliteFlying", 0, Color.MAGENTA.getRGB());
-    //EntityRegistry.addSpawn(EntityEliteFlying.class, 1, 1, 1, EnumCreatureType.monster);
+    // EntityFlying derivative
+    RPGEquipMod.registerEntity(EntityEliteFlying.class, "eliteFlying", Color.decode("#A0803F").getRGB(), Color.decode("#A0100F").getRGB());
+    EntityRegistry.addSpawn(EntityEliteFlying.class, 1, 1, 1, EnumCreatureType.monster);
   }
 
 

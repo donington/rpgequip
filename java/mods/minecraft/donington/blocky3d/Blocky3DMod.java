@@ -1,5 +1,12 @@
 package mods.minecraft.donington.blocky3d;
 
+import mods.minecraft.donington.blocky3d.command.B3DCommandRegion;
+import mods.minecraft.donington.blocky3d.network.B3DPacketPipeline;
+import mods.minecraft.donington.blocky3d.network.packet.WorldWandSelectionPacket;
+import mods.minecraft.donington.blocky3d.network.packet.WorldWandUpdatePacket;
+//import cpw.mods.fml.common.network.NetworkMod;
+import mods.minecraft.donington.blocky3d.proxy.B3DCommonProxy;
+import mods.minecraft.donington.rpgequip.network.packet.GearInventoryPacket;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
@@ -7,23 +14,23 @@ import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-import mods.minecraft.donington.blocky3d.network.B3DPacketPipeline;
-//import cpw.mods.fml.common.network.NetworkMod;
-import mods.minecraft.donington.blocky3d.proxy.B3DCommonProxy;
+import cpw.mods.fml.common.event.FMLServerAboutToStartEvent;
+import cpw.mods.fml.common.event.FMLServerStartingEvent;
 
 
-@Mod(modid = "Blocky3DMod", name = Blocky3DMod.modName, version = Blocky3DMod.modVersion)
+@Mod(modid = Blocky3DMod.MOD_ID, name = Blocky3DMod.MOD_NAME, version = Blocky3DMod.MOD_VERSION)
 //@NetworkMod(clientSideRequired = true, serverSideRequired = false)
 public class Blocky3DMod {
+  public static final String MOD_ID = "blocky3d";
+  public static final String MOD_NAME = "Blocky3D";
+  public static final String MOD_VERSION = "0.3";
 
-  @Instance("Blocky3DMod")
+  @Instance(MOD_ID)
   public static Blocky3DMod instance;
-  public static final String modName = "Blocky3D";
-  public static final String modVersion = "0.2";
 
   @SidedProxy(clientSide = "mods.minecraft.donington.blocky3d.proxy.B3DClientProxy", serverSide = "mods.minecraft.donington.blocky3d.proxy.B3DCommonProxy")
   public static B3DCommonProxy proxy;
-  //public static B3DRegionRenderer regionRenderer;
+
 
   /* protected data */
 
@@ -43,47 +50,59 @@ public class Blocky3DMod {
     B3DPacketPipeline packetHandler = new B3DPacketPipeline();
 
     proxy.allocateHandlers();
-    proxy.registerHandlers();
   }
 
 
   @EventHandler
   public void load(FMLInitializationEvent event) {
-	B3DPacketPipeline.getInstance().init();
+    proxy.registerHandlers();
+
+    B3DPacketPipeline.getInstance().init();
+
+    B3DPacketPipeline.getInstance().registerPacket(WorldWandSelectionPacket.class);
+    B3DPacketPipeline.getInstance().registerPacket(WorldWandUpdatePacket.class);
   }
 
 
   @EventHandler
   public void postInit(FMLPostInitializationEvent event) {
-    B3DPacketPipeline.getInstance().postInit();
+	B3DPacketPipeline.getInstance().postInit();
   }
 
 
-  // @EventHandler
-  // public void serverStarting(FMLServerStartingEvent event) {
-  // }
+  @EventHandler
+  public void serverPreStarting(FMLServerAboutToStartEvent event) {
+	proxy.reset();
+  }
 
+  @EventHandler
+  public void serverStarting(FMLServerStartingEvent event) {
+    event.registerServerCommand(new B3DCommandRegion());
+  }
+
+
+  /*
   protected static void info(String msg) {
     //FMLLog.log(Blocky3DMod.modName, Level.INFO, msg, (Object) null);
-    System.out.println(Blocky3DMod.modName + " [INFO] " + msg);
+    System.out.println(Blocky3DMod.MOD_NAME + " [INFO] " + msg);
   }
 
 
   protected static void info(String fmt, Object... data) {
     //FMLLog.log(Blocky3DMod.modName, Level.INFO, fmt, data);
-    System.out.printf(Blocky3DMod.modName + " [INFO] " + fmt, data);
+    System.out.printf(Blocky3DMod.MOD_NAME + " [INFO] " + fmt, data);
   }
 
 
   protected static void severe(String msg) {
     //FMLLog.log(Blocky3DMod.modName, Level.SEVERE, msg, (Object[]) null);
-    System.out.println(Blocky3DMod.modName + " [SEVERE] " + msg);
+    System.out.println(Blocky3DMod.MOD_NAME + " [SEVERE] " + msg);
   }
 
 
   protected static void severe(String fmt, Object... data) {
     //FMLLog.log(Blocky3DMod.modName, Level.SEVERE, fmt, data);
-    System.out.printf(Blocky3DMod.modName + " [SEVERE] " + fmt, data);
+    System.out.printf(Blocky3DMod.MOD_NAME + " [SEVERE] " + fmt, data);
   }
-
+*/
 }

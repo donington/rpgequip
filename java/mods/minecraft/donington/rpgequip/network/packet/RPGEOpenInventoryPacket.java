@@ -1,4 +1,4 @@
-package mods.minecraft.donington.rpgequip.network;
+package mods.minecraft.donington.rpgequip.network.packet;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;

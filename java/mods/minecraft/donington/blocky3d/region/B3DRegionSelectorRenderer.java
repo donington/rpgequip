@@ -1,10 +1,8 @@
-package mods.minecraft.donington.blocky3d.render;
+package mods.minecraft.donington.blocky3d.region;
 
 import java.util.HashSet;
 import java.util.Set;
 
-import mods.minecraft.donington.blocky3d.helper.B3DRegionCache;
-import mods.minecraft.donington.blocky3d.world.B3DRegion;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.entity.player.EntityPlayer;
@@ -19,45 +17,47 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
 
-public class B3DRegionRenderer {
-  private B3DRegionCache regionCache;
+@SideOnly(Side.CLIENT)
+public class B3DRegionSelectorRenderer {
+  private static B3DRegionSelectorRenderer instance;
+  private static Minecraft mc;
 
-  private float[] rgb = { 0.5F, 0.0F, 0.0F };
-  private double playerX;
-  private double playerY;
-  private double playerZ;
+  private final float[] rgbValid = { 0.3F, 0.3F, 0.0F };
+  private final float[] rgbInvalid = { 0.5F, 0.0F, 0.0F };
+  private final float[] rgbSelected = { 0.2F, 0.5F, 0.2F };
+  private final float[] rgbHighlight = { 0.4F, 0.75F, 0.4F };
+  
+
+  public B3DRegionSelectorRenderer() {
+	instance = this;
+	mc = Minecraft.getMinecraft();
+  }
 
 
-  public B3DRegionRenderer() {
-    regionCache = new B3DRegionCache();
+  public static B3DRegionSelectorRenderer instance() {
+    return instance;
   }
 
 
   @SideOnly(Side.CLIENT)
   @SubscribeEvent
   public void renderWorldLastEvent(RenderWorldLastEvent event) {
-    if ( regionCache.isEmpty() ) return;
+    EntityPlayer player = mc.thePlayer;
+    B3DRegionSelector select = B3DRegionCache.getSelector(player);
+    if ( select.isEmpty() ) return;
 
-    EntityPlayer entityPlayer = Minecraft.getMinecraft().thePlayer;
-    playerX = entityPlayer.lastTickPosX + (entityPlayer.posX - entityPlayer.lastTickPosX) * (double) event.partialTicks;
-    playerY = entityPlayer.lastTickPosY + (entityPlayer.posY - entityPlayer.lastTickPosY) * (double) event.partialTicks;
-    playerZ = entityPlayer.lastTickPosZ + (entityPlayer.posZ - entityPlayer.lastTickPosZ) * (double) event.partialTicks;
+    double playerX = player.lastTickPosX + (player.posX - player.lastTickPosX) * (double) event.partialTicks;
+    double playerY = player.lastTickPosY + (player.posY - player.lastTickPosY) * (double) event.partialTicks;
+    double playerZ = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * (double) event.partialTicks;
 
-    renderRegisteredRegions();
+    renderRegisteredRegions(select, player.worldObj.provider.dimensionId, playerX, playerY, playerZ);
   }
 
 
-  public void addRegionToRenderer(B3DRegion map) {
-	regionCache.addRegion(map);
-  }
-
-
-  public void removeRegionFromRenderer(B3DRegion map) {
-    regionCache.invalidate(map);
-  }
-
-
-  public void renderRegisteredRegions() {
+  public void renderRegisteredRegions(B3DRegionSelector select, int dimension, double playerX, double playerY, double playerZ) {
+    select.validateDimension(dimension);
+    B3DRegionSet set = select.getSet();
+    if ( set == null ) return;
 
     GL11.glEnable(GL11.GL_BLEND);
     GL11.glLineWidth(3.0f);
@@ -65,19 +65,51 @@ public class B3DRegionRenderer {
     GL11.glDisable(GL11.GL_CULL_FACE);
     GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
 
-    for ( B3DRegion map : regionCache.iterate() ) {
-      AxisAlignedBB aabb = AxisAlignedBB.getBoundingBox(map.minX, map.minY, map.minZ, map.maxX, map.maxY, map.maxZ);
-      double expand = 0.005F;
+    int pos = 0;
+    int selected = select.getSelectedRegionIndex();
+    float rgb[];
+    AxisAlignedBB aabb;
+    double expand;
+
+    for ( B3DRegion map : set.iterator() ) {
+      if ( pos == selected ) {
+    	rgb = rgbSelected;
+
+        int[] box = map.getClosestCorner(playerX, playerY, playerZ);
+        if ( box != null ) {
+      	  aabb = AxisAlignedBB.getBoundingBox(box[0], box[1], box[2], box[0]+1, box[1]+1, box[2]+1);
+          expand = 0.008F;
+      	  aabb = aabb.expand(expand, expand, expand).getOffsetBoundingBox(-playerX, -playerY, -playerZ);
+
+      	  GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
+          renderRegionOutline(aabb, rgbHighlight, 0.2F);
+          GL11.glEnable(GL11.GL_POLYGON_OFFSET_LINE);
+          GL11.glPolygonOffset(-1.f,-1.f);
+          GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
+          renderRegionOutline(aabb, rgbHighlight, 1.0F);
+          GL11.glDisable(GL11.GL_POLYGON_OFFSET_LINE);
+        }
+
+      }
+      else if ( map.isValid() )
+    	rgb = rgbValid;
+      else
+    	rgb = rgbInvalid;
+
+      aabb = AxisAlignedBB.getBoundingBox(map.minX, map.minY, map.minZ, map.maxX, map.maxY, map.maxZ);
+      expand = 0.005F;
       aabb = aabb.expand(expand, expand, expand).getOffsetBoundingBox(-playerX, -playerY, -playerZ);
 
       GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
-      renderRegionOutline(aabb, 0.2F);
+      renderRegionOutline(aabb, rgb, 0.2F);
       GL11.glEnable(GL11.GL_POLYGON_OFFSET_LINE);
       GL11.glPolygonOffset(-1.f,-1.f);
       GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
-      renderRegionOutline(aabb, 1.0F);
-    }
+      renderRegionOutline(aabb, rgb, 1.0F);
+      GL11.glDisable(GL11.GL_POLYGON_OFFSET_LINE);
 
+      pos++;
+    }
     GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
     GL11.glEnable(GL11.GL_CULL_FACE);
     GL11.glEnable(GL11.GL_TEXTURE_2D);
@@ -85,7 +117,7 @@ public class B3DRegionRenderer {
   }
 
 
-  public void renderRegionOutline(AxisAlignedBB aabb, float alpha) {
+  public void renderRegionOutline(AxisAlignedBB aabb, float[] rgb, float alpha) {
     Tessellator tessellator = Tessellator.instance;
 
     tessellator.startDrawing(GL11.GL_QUADS);

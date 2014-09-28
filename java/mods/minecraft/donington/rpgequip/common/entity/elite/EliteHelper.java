@@ -108,17 +108,25 @@ public class EliteHelper {
 		EntityAITasks tasklist;
 		int task;
 
+		// cache new aggro task so we can inject it in both task lists
+		EntityAIBase aggroTask;
+		if ( isFlying )
+			aggroTask = new EliteAIAggro(entity, RPGECommonProxy.eliteFlyingAggroRange, RPGECommonProxy.eliteFlyingAggroRangeMax);
+		else
+			aggroTask = new EliteAIAggro(entity, RPGECommonProxy.eliteMobAggroRange, RPGECommonProxy.eliteMobAggroRangeMax);
+
 		lobotomize(entity);
 
 		/* prepare target tasks */
 		tasklist = entity.targetTasks;
 		task = 0;
 
+		/* elite aggro (currently only works for EntityEliteFlying due to EntityMob?) */
+		//if ( isFlying )
+			registerTask(tasklist, aggroTask, task++);
+
 		/* basic melee attack */
 		registerTask(tasklist, new EliteAIMeleeAttack(entity), task++);
-
-		/* aggro behavior */
-		// TODO
 
 		/* racial attacks */
 		if ( EliteCreatureType.Creeper.isCreature(creature) ) {
@@ -126,10 +134,21 @@ public class EliteHelper {
 		}
 
 		/* movement enhancers */
-		if ( rng.nextDouble() < 0.85 )		// ~85% chance dash
+		if ( isFlying ) {					// flying mob
+		  if ( rng.nextDouble() < 0.6 )		// ~60% chance dash
 			registerTask(tasklist, new EliteAIDash(entity), task++);
-		else								// ~ 15% chance ender
+		  else								// ~40% chance ender
 			registerTask(tasklist, new EliteAIEnder(entity), task++);
+		} else {							// ground mob
+		  if ( rng.nextDouble() < 0.85 )	// ~85% chance dash
+			registerTask(tasklist, new EliteAIDash(entity), task++);
+		  else								// ~15% chance ender
+			registerTask(tasklist, new EliteAIEnder(entity), task++);
+		
+		}
+
+		/* aggro behavior */
+		// TODO
 
 		/* chase the target */
 		if ( isFlying )
@@ -146,12 +165,18 @@ public class EliteHelper {
 		tasklist = entity.tasks;
 		task = 0;
 
+		/* elite aggro (currently only works for EntityEliteFlying due to EntityMob?) */
+		//if ( isFlying )
+			registerTask(tasklist, aggroTask, task++);
+
 		/* racial abilities */
 		if ( EliteCreatureType.Enderman.isCreature(creature) )
 			registerTask(tasklist, new EliteAIEnder(entity), task++);
 
+		/* don't drown */
 		registerTask(tasklist, new EntityAISwimming(entity), task++);
 
+		/* wandering */
 		if ( isFlying )
 			registerTask(tasklist, new EliteAIFlyingWander(entity, 0.7, 1.3), task++);	
 		else {
@@ -159,6 +184,7 @@ public class EliteHelper {
 			registerTask(tasklist, new EliteAISprinter(entity), task++);
 			registerTask(tasklist, new EliteAIGroundWander(entity, 0.7, 1.3), task++);
 		}
+
 	}
 
 
@@ -175,9 +201,10 @@ public class EliteHelper {
 		EliteAura savedAura = EliteAura.get(entity);
 		if ( savedAura == null ) {
 			throw new RuntimeException("aura applied to invalid entity");
-		//	EliteAura.register(entity);
-		//	savedAura = EliteAura.get(entity);
 		}
+
+		EliteCreatureAura creatureAura = EliteCreatureAura.getCreatureAura(aura);
+		if ( creatureAura == null ) return;
 
 		RPGEAttributes attrs = RPGEAttributes.get(entity);
 		if ( attrs == null ) {
@@ -185,14 +212,8 @@ public class EliteHelper {
 			attrs = RPGEAttributes.get(entity);
 		}
 
-		// set appropriate aura attributes
-		// FIXME: performance boost here
-		for ( EliteCreatureAura creatureAura : EliteCreatureAura.values() ) {
-			if ( creatureAura.isAura(aura) ) {
-				creatureAura.setAuraAttributes(attrs);
-				break;
-			}
-		}
+		// set aura attributes
+		creatureAura.setAuraAttributes(attrs);
 
 		// set elite attributes
 		attrs.setHealth(100);

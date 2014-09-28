@@ -5,7 +5,7 @@ import mods.minecraft.donington.rpgequip.common.RPGECommonProxy;
 import mods.minecraft.donington.rpgequip.common.RPGEAttributes;
 import mods.minecraft.donington.rpgequip.common.item.ItemGear;
 import mods.minecraft.donington.rpgequip.common.player.GearInventory;
-import mods.minecraft.donington.rpgequip.network.PlayerAttributePacket;
+import mods.minecraft.donington.rpgequip.network.packet.PlayerAttributePacket;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.IInventory;
