@@ -7,10 +7,17 @@ import mods.minecraft.donington.rpgequip.common.entity.elite.EliteCreatureIndex;
 import mods.minecraft.donington.rpgequip.common.entity.elite.EliteNameGenerator;
 import mods.minecraft.donington.rpgequip.common.entity.elite.EntityEliteHelper;
 import net.minecraft.client.Minecraft;
+import net.minecraft.entity.DataWatcher;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityFlying;
+import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.EntityAITasks;
 import net.minecraft.entity.monster.EntityMob;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeModContainer;
 
@@ -26,6 +33,7 @@ public class EntityEliteFlying extends EntityFlying {
     protected void entityInit() {
         super.entityInit();
     	this.getDataWatcher().addObject(RPGECommonProxy.eliteCreatureTypeDataWatcherId, Integer.valueOf(0));
+    	this.getDataWatcher().addObject(RPGECommonProxy.eliteFuseDataWatcherId, Float.valueOf(0));
     }
 
 
@@ -35,14 +43,21 @@ public class EntityEliteFlying extends EntityFlying {
 			int creature = EntityEliteHelper.getEliteCreatureType(this);
 
 			// create elite on server side
-			if ( RPGECommonProxy.isServer() && creature <= 0 ) {
-				EliteHelper.createEliteFlying(this, creature);
-				EliteCreatureIndex.setRandomEliteFlying(this);
-				return;
+			if ( RPGECommonProxy.isServer() ) {
+				int aura = EntityEliteHelper.getEliteAura(this);
+				if ( creature <= 0 ) {
+					EliteCreatureIndex.setRandomEliteFlying(this);
+					creature = EntityEliteHelper.getEliteCreatureType(this);
+				}
+				if ( aura <= 0 )
+					EliteHelper.createEliteFlying(this, creature);
+				else
+					EliteHelper.createEliteFlying(this, creature, aura);
 			}
 
-			// detect elite on both sides and set ready
-			if ( creature <= 0 ) return;
+			// detect if creature is valid on client
+			else if ( creature <= 0 )
+				return;
 
 			setSize(EliteCreatureIndex.getWidth(creature), EliteCreatureIndex.getHeight(creature));
 			setCustomNameTag(EliteNameGenerator.nameEliteLike(creature, EntityEliteHelper.getEliteAura(this)));
@@ -75,5 +90,52 @@ public class EntityEliteFlying extends EntityFlying {
     protected boolean isAIEnabled() {
         return true;
     }
-	
+
+
+    protected EntityLivingBase findPlayerToAttack() {
+        EntityPlayer entityplayer = this.worldObj.getClosestVulnerablePlayerToEntity(this, RPGECommonProxy.eliteMobAggroRange);
+        return entityplayer != null && this.canEntityBeSeen(entityplayer) ? entityplayer : null;
+    }
+
+
+    /** aggro is still broken, this does not fire for new ai.
+     *  FIX: port to new ai duh
+     **/
+    //@Override
+    //protected void updateEntityActionState() {}
+    /*
+	@Override
+	protected void updateEntityActionState() {
+		System.out.println("updateEntityActionState");
+		EntityLivingBase target = this.getAttackTarget();
+
+        if ( target == null )
+            target = this.findPlayerToAttack();
+
+        if ( target == null )
+        	this.setAttackTarget(null);
+        else if ( target instanceof EntityPlayer && ((EntityPlayer)target).capabilities.isCreativeMode )
+        	this.setAttackTarget(null);
+        else
+        	this.setAttackTarget(target);
+	}
+	*/
+
+	@Override
+	public void readEntityFromNBT(NBTTagCompound nbt) {
+		super.readEntityFromNBT(nbt);
+		DataWatcher dw = getDataWatcher();
+		int creature = nbt.getInteger("creature");
+		if ( creature > 0 ) {
+			EntityEliteHelper.setEliteCreatureType(this, creature);
+		}
+	}
+
+
+	@Override
+	public void writeEntityToNBT(NBTTagCompound nbt) {
+		super.writeEntityToNBT(nbt);
+		nbt.setInteger("creature", getDataWatcher().getWatchableObjectInt(RPGECommonProxy.eliteCreatureTypeDataWatcherId));
+	}
+
 }

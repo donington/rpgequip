@@ -37,6 +37,7 @@ public class EliteAIMeleeAttack extends EntityAIBase {
 	}
 
 
+	/** this needs to be refactored to support all creatures **/
 	@Override
 	public void startExecuting() {
 		entity.swingItem();

@@ -1,5 +1,8 @@
 package mods.minecraft.donington.rpgequip;
 
+import java.io.File;
+
+import net.minecraftforge.common.config.Configuration;
 import mods.minecraft.donington.rpgequip.client.RPGEClientProxy;
 import mods.minecraft.donington.rpgequip.common.RPGECommonProxy;
 import cpw.mods.fml.common.Mod;
@@ -15,12 +18,13 @@ import cpw.mods.fml.common.registry.EntityRegistry;
 public class RPGEquipMod {
   public static final String MOD_ID       = "rpgequipmod";
   public static final String MOD_NAME     = "RPGEquip Mod";
-  public static final String MOD_VERSION  = "build-1027";
+  public static final String MOD_VERSION  = "build-1052";
 
   // configuration parameters
   public static double eliteMonsterChance = 0.96;      // ~3% chance
   public static double eliteAnimalChance = 0.993;  // ~0.7% chance
-  public static double eliteEntityChance = 0.5;    // ~50% chance (with low spawn rng)
+  public static double eliteMobEntityChance = 0.5;    // ~50% chance (with lowest spawn rng)
+  public static double eliteFlyingEntityChance = 0.4;    // ~40% chance (with lowest spawn rng)
   
 
   //@SidedProxy(clientSide = "mods.minecraft.donington.rpgequip.client.RPGEClientProxy", serverSide = "mods.minecraft.donington.rpgequip.common.RPGECommonProxy")
@@ -29,15 +33,33 @@ public class RPGEquipMod {
   @Instance(MOD_ID)
   public static RPGEquipMod instance;
 
+  private static Configuration config;
+//  public static boolean finiteFire;  // cannot use;  block override is not modless compat
+
+
+  /*
+  private void loadConfig(File configFile) {
+	  config = new Configuration(configFile);
+	  config.load();
+
+	  finiteFire = config.get(Configuration.CATEGORY_GENERAL, "finiteFire", true).getBoolean(true);
+  }
+   */
+
+
   @EventHandler
   public void preInit(FMLPreInitializationEvent event) {
-    if ( RPGECommonProxy.isClient() )
+  	//loadConfig(event.getSuggestedConfigurationFile());
+
+    if ( RPGECommonProxy.isClient() ) {
       proxy = new RPGEClientProxy();
+    }
+
     else if ( RPGECommonProxy.isServer() ) {
-    	System.out.printf("%s %s\n", MOD_NAME, MOD_VERSION);
+    	//System.out.printf("%s %s\n", MOD_NAME, MOD_VERSION);
     	proxy = new RPGECommonProxy();
     }
-    else throw new IllegalStateException("Cannot detect CLIENT/SERVER state from SidedProxy");
+    else throw new IllegalStateException("RPGEquip cannot detect CLIENT/SERVER state");
 
     proxy.preInit(event);
   }

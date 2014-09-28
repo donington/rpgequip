@@ -9,10 +9,12 @@ import mods.minecraft.donington.rpgequip.common.entity.elite.EliteCreatureIndex;
 import mods.minecraft.donington.rpgequip.common.entity.magic.EntityMagicExplosion;
 import mods.minecraft.donington.rpgequip.common.entity.magic.EntityMagicFire;
 import mods.minecraft.donington.rpgequip.common.entity.magic.EntityMagicShield;
-import mods.minecraft.donington.rpgequip.forge.ClientKeybindEventHandler;
+import mods.minecraft.donington.rpgequip.forge.ClientFMLHandler;
 import mods.minecraft.donington.rpgequip.forge.ClientRenderHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.IIconRegister;
+import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.util.IIcon;
 import net.minecraftforge.common.MinecraftForge;
@@ -25,6 +27,7 @@ import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import cpw.mods.fml.common.eventhandler.EventBus;
 import cpw.mods.fml.common.registry.GameRegistry;
 
 public class RPGEClientProxy extends RPGECommonProxy {
@@ -46,13 +49,17 @@ public class RPGEClientProxy extends RPGECommonProxy {
     ClientRegistry.registerKeyBinding(RPGEquipInventory);
 
     RPGECommonProxy.anvilProxy.clientInit();
+
+    // HACK: ensure BlockFiniteFire:registerBlockIcons is called until addSubstitutionAlias works properly
+	blockFiniteFire.registerBlockIcons(Minecraft.getMinecraft().getTextureMapBlocks());
   }
 
 
   @Override
   public void postInit(FMLPostInitializationEvent event) {
     super.postInit(event);
-    FMLCommonHandler.instance().bus().register(new ClientKeybindEventHandler());
+
+    FMLCommonHandler.instance().bus().register(new ClientFMLHandler());
     MinecraftForge.EVENT_BUS.register(new ClientRenderHandler());
 
     RPGECommonProxy.anvilProxy.clientPostInit();

@@ -32,8 +32,8 @@ public class MagicShieldRenderer extends Render {
 
 
 	public MagicShieldRenderer() {
-		this.texture = new ResourceLocation(RPGEquipMod.MOD_ID, "textures/fire.png");
-		this.textureMask = new ResourceLocation(RPGEquipMod.MOD_ID, "textures/flicker.png");
+		this.texture = new ResourceLocation(RPGEquipMod.MOD_ID, "textures/magic/elite_shield.png");
+		this.textureMask = new ResourceLocation(RPGEquipMod.MOD_ID, "textures/magic/scale.png");
 		this.mc = Minecraft.getMinecraft();
 		this.tes = Tessellator.instance;
 		this.pulse = 0;

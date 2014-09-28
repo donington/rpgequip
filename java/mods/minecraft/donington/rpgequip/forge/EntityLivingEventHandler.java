@@ -5,14 +5,15 @@ import mods.minecraft.donington.rpgequip.RPGEquipMod;
 import mods.minecraft.donington.rpgequip.common.RPGEAttributes;
 import mods.minecraft.donington.rpgequip.common.RPGECommonProxy;
 import mods.minecraft.donington.rpgequip.common.RPGEDamageSource;
+import mods.minecraft.donington.rpgequip.common.RPGESpecial;
 import mods.minecraft.donington.rpgequip.common.entity.EntityEliteFlying;
 import mods.minecraft.donington.rpgequip.common.entity.EntityEliteMob;
 import mods.minecraft.donington.rpgequip.common.entity.elite.EliteHelper;
 import mods.minecraft.donington.rpgequip.common.entity.living.EliteAura;
 import mods.minecraft.donington.rpgequip.common.item.gear.GearEnchantHelper;
 import mods.minecraft.donington.rpgequip.common.player.GearInventory;
-import mods.minecraft.donington.rpgequip.network.GearInventoryPacket;
-import mods.minecraft.donington.rpgequip.network.PlayerAttributePacket;
+import mods.minecraft.donington.rpgequip.network.packet.GearInventoryPacket;
+import mods.minecraft.donington.rpgequip.network.packet.PlayerAttributePacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.command.CommandClearInventory;
 import net.minecraft.entity.Entity;
@@ -62,6 +63,7 @@ public class EntityLivingEventHandler {
       // register entity extended information if it is not already available
       if ( GearInventory.get(entity) == null )   GearInventory.register(entity);
       if ( RPGEAttributes.get(entity) == null )  RPGEAttributes.register(entity);
+      e.getDataWatcher().addObject(RPGECommonProxy.specialDataWatcherId, 0);
       return;
     }
 
@@ -70,6 +72,7 @@ public class EntityLivingEventHandler {
 		EntityLivingBase entity = (EntityLivingBase) event.entity;
 		if ( EliteAura.get(entity) == null )  EliteAura.register(entity);
 		e.getDataWatcher().addObject(RPGECommonProxy.eliteAuraDataWatcherId, 0);
+		e.getDataWatcher().addObject(RPGECommonProxy.specialDataWatcherId, 0);
 		return;
 	}
   }
@@ -107,12 +110,19 @@ public class EntityLivingEventHandler {
   @SubscribeEvent
   public void onEntityJoinWorld(EntityJoinWorldEvent event) {
 	  if ( RPGECommonProxy.isClient() ) {
-		  Minecraft mc = Minecraft.getMinecraft();
-		  if ( event.entity.equals(mc.thePlayer) )
-			  mc.thePlayer.addChatMessage(new ChatComponentText(String.format("%s%s %s", EnumChatFormatting.GOLD, RPGEquipMod.MOD_NAME, RPGEquipMod.MOD_VERSION)));
-
+		  // try to show the current client the login message (following a server connection)
+		  ClientFMLHandler.tryShowClientLoginMessage(event.entity);
 		  return;
 	  }
+
+	  /* special test code (this is going to change a lot...)
+	  if ( event.entity instanceof EntityZombie ) {
+		  RPGESpecial special = RPGESpecial.get((EntityLivingBase) event.entity);
+		  special.setSpecial(RPGESpecial.invisible, true);
+		  special.update();
+		  System.out.println("invisible set");
+	  }
+	   */
 
 	  if ( event.entity instanceof EntityPlayer ) {
 		  onPlayerRespawn((EntityPlayer) event.entity);
@@ -122,16 +132,12 @@ public class EntityLivingEventHandler {
 	  if ( event.entity instanceof EntityLiving ) {
 		  EntityLiving entity = (EntityLiving) event.entity;
 
-		  /* this check is a mess since DataWatcher of aura is not preserved.
-		   * well, it is preserved in EntityEliteMob and EntityEliteFlying, but because
-		   * they have a specific load/save of the aura to the nbt.
-		   *
-		   * FIXME: create EliteAura extends IExtendedEntityProperties which
-		   *        is used to preserve aura data between saves and loads.
-		   *          - if EliteAura.get() returns null, then the spawn is new and run rng process below
-		   *          - if EliteAura.get() returns 0 or valid aura,
-		   *            set the data watcher and do nothing else
-		   *            (RPGEAttributes should be preserved independently)
+		  /* EliteAura extends IExtendedEntityProperties which
+		   * is used to preserve aura data between saves and loads.
+		   *   - if EliteAura.get() returns null, then the spawn is new and run rng process below
+		   *   - if EliteAura.get() returns 0 or valid aura,
+		   *     set the data watcher and do nothing else
+		   *     (RPGEAttributes should be preserved independently)
 		   */
 
 		  // if an aura is already set, the entity must already be configured.
@@ -152,18 +158,20 @@ public class EntityLivingEventHandler {
 			  return;
 		  }
 
-		  // handle EntityEliteMob, EntityEliteFlying
-		  else if ( entity instanceof EntityEliteMob ||
-				    entity instanceof EntityEliteFlying ) {
-
-			  // EntityElite* are set to have the lowest possible spawn chance by setSpawn,
-			  // which is about as rare as an Enderman.
-
-			  // Lower the chance of EntityElite* spawn even more with this check
-			  if ( entity.getRNG().nextDouble() < RPGEquipMod.eliteEntityChance ) {
-				  event.setCanceled(true);
-				  return;
-			  }
+		  // EntityEliteMob and EntityEliteFlying have the lowest possible
+		  // spawn chance by setSpawn, which is about as rare as an Enderman.
+		  //
+		  // reduce the spawn chance even more with the rng checks
+		  //
+		  else if ( entity instanceof EntityEliteMob &&
+			        entity.getRNG().nextDouble() < RPGEquipMod.eliteMobEntityChance ) {
+			  event.setCanceled(true);
+			  return;
+		  }
+		  else if ( entity instanceof EntityEliteFlying &&
+			        entity.getRNG().nextDouble() < RPGEquipMod.eliteFlyingEntityChance ) {
+			  event.setCanceled(true);
+			  return;
 		  }
 
 		  double chance = 0;
@@ -215,23 +223,6 @@ public class EntityLivingEventHandler {
     EntityCreature entity = (EntityCreature) event.entityLiving;
     RPGEAttributes attrs = RPGEAttributes.get(entity);
     if ( attrs == null ) return;
-
-    // wherewasi cache to return when deaggro'd?
-    // aggro list to consider when hating on players? might be too much
-
-    EntityLivingBase target = entity.getAttackTarget();
-
-    if ( target != null ) {
-    	if ( entity.getDistanceToEntity(target) > RPGECommonProxy.eliteAggroRange ) {
-    		target = null;
-    	}
-    }
-    	
-    if ( target == null ) {
-    	target = entity.worldObj.getClosestPlayer(entity.posX, entity.posY, entity.posZ, RPGECommonProxy.eliteAggroRange);
-    }
-
-    entity.setAttackTarget(target);
   }
 
 
@@ -426,7 +417,8 @@ public class EntityLivingEventHandler {
         gear.recalculate(attrs);
         attrs.applyModifiers(player);
 
-        command.notifyAdmins(event.sender, LanguageRegistry.instance().getStringLocalization("commands.clear.gearinventory"), new Object[] {player.getCommandSenderName(), Integer.valueOf(count)});
+        //command.notifyAdmins(event.sender, LanguageRegistry.instance().getStringLocalization("commands.clear.gearinventory"), new Object[] {player.getCommandSenderName(), Integer.valueOf(count)});
+        command.func_152373_a(event.sender, command, "commands.clear.gearinventory", new Object[] {player.getCommandSenderName(), Integer.valueOf(count)});
 	}
 
 }

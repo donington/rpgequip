@@ -23,27 +23,12 @@ public class EliteAIGroundChargeTarget extends EntityAIBase {
 		double posX = target.posX + rng.nextDouble() - 0.5;
 		double posZ = target.posZ + rng.nextDouble() - 0.5;
 		this.entity.getNavigator().tryMoveToXYZ(posX, target.posY, posZ, 1.0);
-		entity.setAttackTarget(target);
 	}
 
 
 	public boolean shouldExecute() {
 		target = entity.getAttackTarget();
-		if ( target != null ) {
-    		if ( !entity.canEntityBeSeen(target) ) return false;
-			if ( entity.getDistanceToEntity(target) > RPGECommonProxy.eliteAggroRange )
-				return false;
-			if ( target instanceof EntityPlayer && ((EntityPlayer)target).capabilities.isCreativeMode )
-				return false;
-
-			return true;
-		}
-
-		target = entity.getLastAttacker();
-		if ( target == null || entity.getDistanceToEntity(target) > RPGECommonProxy.eliteAggroRangeMax )
-			return false;
-
-		return true;
+		return target != null;
 	}
 
 
@@ -54,6 +39,12 @@ public class EliteAIGroundChargeTarget extends EntityAIBase {
 
 
 	public boolean continueExecuting() {
+		target = entity.getAttackTarget();
+		if ( target == null ) {
+			//System.out.println("EliteAIChargeTarget :: target lost");
+			return false;
+		}
+
 		double distance = entity.getDistanceToEntity(target);
 
 		if ( entity.getNavigator().noPath() && distance > 1.3 ) {
@@ -66,12 +57,11 @@ public class EliteAIGroundChargeTarget extends EntityAIBase {
 			return true;
 		}
 
-		if ( target.isEntityAlive() && distance < RPGECommonProxy.eliteAggroRangeMax )
+		if ( target.isEntityAlive() && distance < RPGECommonProxy.eliteMobAggroRangeMax )
 			return true;
 
 		//System.out.println("EliteAIChargeTarget :: target lost");
 		entity.setAttackTarget(null);
-		entity.setLastAttacker(null);
 		return false;
 	}
 

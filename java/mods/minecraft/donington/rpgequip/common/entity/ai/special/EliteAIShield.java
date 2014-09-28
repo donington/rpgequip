@@ -13,12 +13,10 @@ public class EliteAIShield extends EntityAIBase {
 	private EntityLivingBase target;
 	private int cooldown;
 	private int activeTime;
-	private int fireballPulse;
 
 	private static final int cooldownMax = 100;
 	private static final int durationMax = 200;
 	private static final float absorptionMax = 20F;
-	private static final int fireballRate = 1;
 
 
 	public EliteAIShield(EntityLiving entity) {
@@ -31,8 +29,6 @@ public class EliteAIShield extends EntityAIBase {
         if ( cooldown > cooldownMax ) {
     		target = entity.getAttackTarget();
     		if ( target == null ) return false;
-    		if ( !entity.canEntityBeSeen(target) ) return false;
-    		if ( target instanceof EntityPlayer && ((EntityPlayer)target).capabilities.isCreativeMode ) return false;
 
     		cooldown = 0;
         	activeTime = 0;

@@ -58,6 +58,14 @@ public class EliteAIFlyingWander extends EntityAIBase {
     }
 
 
+    private boolean canSeeGroundFromHere(int posX, int posY, int posZ) {
+    	for ( int i = 0; i < 10; i++ ) {
+    	  if ( entity.worldObj.isAirBlock(posX, posY-i, posZ) ) continue;
+    	  return true;
+    	}
+    	return false;
+    }
+
     @Override
     public boolean shouldExecute() {
     	if ( entity.getAttackTarget() != null ) return false;
@@ -66,25 +74,21 @@ public class EliteAIFlyingWander extends EntityAIBase {
 
     	// should I go home?
     	Vec3 position = Vec3.createVectorHelper(entity.posX, entity.posY, entity.posZ);
-    	if ( position.squareDistanceTo(homePathPoint.xCoord, homePathPoint.yCoord, homePathPoint.zCoord) > RPGECommonProxy.eliteWanderRange ) {
-    		rngPathPoint = homePathPoint;
-    		returning = true;
-    		return true;
-    	}
-
 
     	Vec3 vec3 = Vec3.createVectorHelper(entity.getRNG().nextDouble() * RPGECommonProxy.eliteWanderDistance, 0.0, 0.0);
         vec3.rotateAroundX(entity.getRNG().nextFloat());
     	vec3.rotateAroundY(entity.getRNG().nextFloat());
     		
-
     	int worldX = MathHelper.floor_double(entity.posX + vec3.xCoord);
     	int worldY = MathHelper.floor_double(entity.posY + vec3.yCoord);
     	int worldZ = MathHelper.floor_double(entity.posZ + vec3.zCoord);
 
+    	if ( !canSeeGroundFromHere(worldX, worldY, worldZ) )
+    		worldY -= 10;
+
     	if ( canFitAtPosition(worldX, worldY, worldZ) ) {
     		rngPathPoint = new PathPoint(worldX, worldY, worldZ);
-    		System.out.printf("fly wander to point (%d, %d, %d)\n", worldX, worldY, worldZ);
+    		//System.out.printf("fly wander to point (%d, %d, %d)\n", worldX, worldY, worldZ);
     		return true;
     	}
 
@@ -96,7 +100,6 @@ public class EliteAIFlyingWander extends EntityAIBase {
     public void startExecuting() {
     	PathEntity path;
     	this.resetIdle();
-//    	entity.setJumping(true);
     }
 
 
@@ -114,7 +117,6 @@ public class EliteAIFlyingWander extends EntityAIBase {
         if ( position.squareDistanceTo(rngPathPoint.xCoord, rngPathPoint.yCoord, rngPathPoint.zCoord) < 16 )
         	return false;
 
-        //Vec3 point = Vec3.createVectorHelper(rngPathPoint.xCoord, rngPathPoint.yCoord, rngPathPoint.zCoord).normalize();
         Vec3 point = Vec3.createVectorHelper(rngPathPoint.xCoord - entity.posX, rngPathPoint.yCoord - entity.posY, rngPathPoint.zCoord - entity.posZ).normalize();
     	entity.motionX += point.xCoord * speed * 0.03;
     	entity.motionY += point.yCoord * speed * 0.03;

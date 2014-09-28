@@ -19,14 +19,14 @@ import net.minecraftforge.common.IExtendedEntityProperties;
 public class RPGEAttributes implements IExtendedEntityProperties {
   public static final String ExtendedPropertyName = "RPGEquipAttributes";
 
+  // TODO: move to static UUID no need for random really
   private static final UUID mcAttrHealthID  = UUID.randomUUID();
   private static final UUID mcAttrMoveID    = UUID.randomUUID();
 
   private static final int mcAttrAdd = 0;
   private static final int mcAttrMult = 1;
 
-
-  /* attribute values (CONSIDER: reimplement as map;  perhaps stupid) */
+  /* attribute values (CONSIDER: value map PROS extendable CONS slightly more complex) */
   private int  armor;        // physical reduction from armor
   private int  health;       // health increase
   private int  strength;     // physical damage (rng)
@@ -373,5 +373,7 @@ public class RPGEAttributes implements IExtendedEntityProperties {
     if ( stack != null )
       addSockets(l, EquipSocket.getNumSockets(stack));
   }
+
+
 
 }

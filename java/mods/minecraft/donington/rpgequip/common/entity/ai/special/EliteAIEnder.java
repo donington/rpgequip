@@ -17,38 +17,45 @@ public class EliteAIEnder extends EntityAIBase {
 	private EntityLivingBase target;
 	private int cooldown;
 	private int activeTime;
+	private int cooldownIdleMax;
+	private int cooldownAggroMax;
 
 	private static final int teleportRangeXZ = 12;
 	private static final int teleportRangeY = 5;
-	private static final int cooldownAggroMax = 80;
-	private static final int cooldownIdleMax = 200;
 	private static final int durationMax = 20;
 	private static final double hostileTeleportChance = 0.6;  // ~40% chance for hostile teleport
 
 
 	public EliteAIEnder(EntityLiving entity) {
 		this.entity = entity;
+		resetTimers();
 	}
+
+
+    private void resetTimers() {
+    	cooldown = 0;
+    	activeTime = 0;
+    	cooldownIdleMax = entity.getRNG().nextInt(80) + 120;
+    	cooldownAggroMax = entity.getRNG().nextInt(20) + 75;
+    }
 
 
 	@Override
 	public boolean shouldExecute() {
+		target = entity.getAttackTarget();
 
 		// allow idle teleports
 		if ( cooldown > cooldownIdleMax ) {
-    		cooldown = 0;
-        	activeTime = 0;
+			resetTimers();
         	return true;
 		}
 
 		if ( cooldown > cooldownAggroMax ) {
-    		target = entity.getAttackTarget();
+//    		target = entity.getAttackTarget();
     		if ( target == null ) return false;
-    		if ( target instanceof EntityPlayer && ((EntityPlayer)target).capabilities.isCreativeMode ) return false;
 
-    		cooldown = 0;
-        	activeTime = 0;
-        	return true;
+    		resetTimers();
+    		return true;
         }
 
     	cooldown++;
@@ -60,9 +67,8 @@ public class EliteAIEnder extends EntityAIBase {
 	public void startExecuting() {
         entity.worldObj.playSoundEffect(entity.posX, entity.posY, entity.posZ, "mob.endermen.portal", 1.0F, 1.0F);
 
-		EntityLivingBase target = entity.getAttackTarget();
         if ( target != null && entity.getRNG().nextDouble() > hostileTeleportChance ) {
-			if ( entity.canEntityBeSeen(target) && entity.getDistanceToEntity(target) < teleportRangeXZ ) {
+			if ( entity.getDistanceToEntity(target) < teleportRangeXZ ) {
 				if ( EliteHelper.teleportToEntity(entity, target, teleportRangeY) )
 					entity.playSound("mob.endermen.portal", 1.0F, 1.0F);
 				return;

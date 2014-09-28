@@ -4,7 +4,9 @@ import java.util.List;
 import java.util.Random;
 
 import mods.minecraft.donington.rpgequip.RPGEquipMod;
+import mods.minecraft.donington.rpgequip.common.RPGECommonProxy;
 import net.minecraft.block.Block;
+import net.minecraft.entity.DataWatcher;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
@@ -19,20 +21,31 @@ import net.minecraft.world.World;
 public class EntityMagicFire extends EntityMagic {
 	private double mX, mZ;
 	private float reach = 1.3F;
+	private float explosionForce;
+	private int fireballIndex;
+	private boolean isDestructive;
 
 
 	public EntityMagicFire(World world) {
 		super(world);
 		this.setSize(1.0F, 1.0F);
+		fireballIndex = -1;
 	}
 
 
-	public EntityMagicFire(World world, EntityLivingBase caster) {
-		this(world, caster, caster.getLookVec());
+	//public EntityMagicFire(World world, EntityLivingBase caster) {
+	//	this(world, caster, caster.getLookVec(), 1.0F);
+	//}
+
+
+	public EntityMagicFire(World world, EntityLivingBase caster, float force, int fbIndex) {
+		this(world, caster, caster.getLookVec(), force);
+		this.fireballIndex = fbIndex;
+		
 	}
 
 
-	public EntityMagicFire(World world, EntityLivingBase caster, Vec3 direction) {
+	public EntityMagicFire(World world, EntityLivingBase caster, Vec3 direction, float force) {
 		this(world);
 		this.caster = caster;
 
@@ -43,6 +56,17 @@ public class EntityMagicFire extends EntityMagic {
 		this.motionY = direction.yCoord * 0.5;
 		this.motionZ = mZ;
 
+		this.explosionForce = force;
+
+		if ( force > 2.0F ) {
+			this.isDestructive = true;
+		}
+		else {
+			this.isDestructive = false;
+		}
+
+		this.fireballIndex = 0;
+
 		this.setSize(1.0F, 1.0F);
 		this.setPosition(caster.posX + mX, caster.posY + caster.getEyeHeight(), caster.posZ + mZ);
 		this.playSound(RPGEquipMod.MOD_ID + ":magic.fireball", 1.0F, 1.0F - this.getRNG().nextFloat() * 0.3F);
@@ -50,7 +74,21 @@ public class EntityMagicFire extends EntityMagic {
 
 
 	@Override
+	public void entityInit() {
+		super.entityInit();
+		DataWatcher dw = this.getDataWatcher();
+		dw.addObject(RPGECommonProxy.magicDataWatcherId, Integer.valueOf(-1));
+	}
+
+
+	@Override
 	public void onUpdate() {
+		if ( !isDataWatcherReady(fireballIndex) ) return;
+
+		if ( fireballIndex < 0 )
+			fireballIndex = getDataWatcher().getWatchableObjectInt(RPGECommonProxy.magicDataWatcherId);
+
+		//if ( 0 == 0 ) return;
 		super.onUpdate();
 
 		if ( !worldObj.isRemote ) {
@@ -87,7 +125,7 @@ public class EntityMagicFire extends EntityMagic {
 				hit.attackEntityFrom(DamageSource.inFire, 5.0F);
 			}
 			if ( hitCount > 0 ) {
-				worldObj.newExplosion(this, posX, posY, posZ, 1.0F, true, false);
+				worldObj.newExplosion(this, posX, posY, posZ, explosionForce, !isDestructive, isDestructive);
 				setDead();
 				return;
 			}
@@ -102,7 +140,7 @@ public class EntityMagicFire extends EntityMagic {
 				//if ( getRelativeBlock(0, 1, 0) == Blocks.air )
 				if ( getRelativeBlock(0, 1, 0).getMaterial().isReplaceable() )
 					setRelativeBlock(0, 1, 0, Blocks.fire);
-				worldObj.newExplosion(this, posX, posY+1, posZ, 1.0F, true, false);
+				worldObj.newExplosion(this, posX, posY+1, posZ, explosionForce, !isDestructive, isDestructive);
 				setDead();
 			}
 		}
@@ -110,6 +148,10 @@ public class EntityMagicFire extends EntityMagic {
 		setPosition(posX, posY, posZ);
 	}
 
+
+	public int getColorIndex() {
+		return fireballIndex;
+	}
 
 /*
 	@Override

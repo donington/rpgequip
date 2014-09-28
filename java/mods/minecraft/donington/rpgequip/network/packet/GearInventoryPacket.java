@@ -1,4 +1,4 @@
-package mods.minecraft.donington.rpgequip.network;
+package mods.minecraft.donington.rpgequip.network.packet;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -7,42 +7,40 @@ import net.minecraft.nbt.NBTTagCompound;
 import cpw.mods.fml.common.network.ByteBufUtils;
 import cpw.mods.fml.relauncher.Side;
 import mods.minecraft.donington.blocky3d.network.B3DIPacket;
-import mods.minecraft.donington.rpgequip.common.RPGEAttributes;
+import mods.minecraft.donington.rpgequip.common.player.GearInventory;
 
 
-public class PlayerAttributePacket implements B3DIPacket {
+public class GearInventoryPacket implements B3DIPacket {
   private NBTTagCompound data;
 
 
-  public PlayerAttributePacket() {}
+  public GearInventoryPacket() {}
 
 
-  public PlayerAttributePacket(RPGEAttributes attrs) {
+  public GearInventoryPacket(GearInventory gear) {
 	this.data = new NBTTagCompound();
-	attrs.saveNBTData(this.data);
+	gear.saveNBTData(this.data);
   }
 
 
   @Override
   public void encode(ChannelHandlerContext ctx, ByteBuf buf) {
-    //System.out.println("PlayerAttributePacket.encode()");
+    //System.out.println("GearInventoryPacket.encode()");
     ByteBufUtils.writeTag(buf, data);
   }
 
 
 	@Override
 	public void decode(ChannelHandlerContext ctx, ByteBuf buf) {
-      //System.out.println("PlayerAttributePacket.decode()");
+      //System.out.println("GearInventoryPacket.decode()");
       data = ByteBufUtils.readTag(buf);
 	}
 
 
 	@Override
 	public void executeClient(EntityPlayer player) {
-      //System.out.println("RPGAttributePacket.executeClient()");
-      RPGEAttributes attrs = RPGEAttributes.get(player);
-      attrs.loadNBTData(data);
-      attrs.applyModifiers(player);
+      //System.out.println("GearInventoryPacket.executeClient()");
+      GearInventory.get(player).loadNBTData(data);
 	}
 
 

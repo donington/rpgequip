@@ -35,8 +35,6 @@ public class EliteAIDash extends EntityAIBase {
         	if ( entity.isAirBorne ) return false;
     		target = entity.getAttackTarget();
     		if ( target == null ) return false;
-    		if ( !entity.canEntityBeSeen(target) ) return false;
-    		if ( target instanceof EntityPlayer && ((EntityPlayer)target).capabilities.isCreativeMode ) return false;
     		float distance = entity.getDistanceToEntity(target);
     		if ( distance < minimumDistance || distance > maximumDistance ) return false;
 

@@ -62,9 +62,9 @@ public class SmithingHammer extends ItemTool {
 		if ( player.openContainer instanceof ContainerSuperiorAnvil ) return false;
 
 		// perform ray trace to see what block we're looking at
-		Vec3 origin = world.getWorldVec3Pool().getVecFromPool(player.posX, player.posY + player.getEyeHeight(), player.posZ);
+		Vec3 origin = Vec3.createVectorHelper(player.posX, player.posY + player.getEyeHeight(), player.posZ);
 		Vec3 look   = player.getLookVec();
-		Vec3 offset = world.getWorldVec3Pool().getVecFromPool(origin.xCoord + look.xCoord * anvilStrikeReach, origin.yCoord + look.yCoord * anvilStrikeReach, origin.zCoord + look.zCoord * anvilStrikeReach);
+		Vec3 offset = Vec3.createVectorHelper(origin.xCoord + look.xCoord * anvilStrikeReach, origin.yCoord + look.yCoord * anvilStrikeReach, origin.zCoord + look.zCoord * anvilStrikeReach);
 		MovingObjectPosition mop = world.rayTraceBlocks(origin, offset);
 		if ( mop == null ) return false;
 

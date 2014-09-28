@@ -21,7 +21,7 @@ public class EliteAIGroundWander extends EntityAIBase {
     private boolean returning;
     private final boolean isFlying;
     private int idleTickCount, idleTickMax;
-	//private long timer;
+    // private int timer;
 
 
     public EliteAIGroundWander(EntityLiving entity, double wanderSpeed, double returnSpeed) {
@@ -102,9 +102,6 @@ public class EliteAIGroundWander extends EntityAIBase {
 
     	Vec3 vec3 = Vec3.createVectorHelper(entity.getRNG().nextDouble() * RPGECommonProxy.eliteWanderDistance, 0.0, 0.0);
     	vec3.rotateAroundY(entity.getRNG().nextFloat());
-    	//if ( isFlying )
-        //	vec3.rotateAroundZ(entity.getRNG().nextFloat());
-    		
 
     	int worldX = MathHelper.floor_double(entity.posX + vec3.xCoord);
     	int worldY = MathHelper.floor_double(entity.posY + vec3.yCoord);

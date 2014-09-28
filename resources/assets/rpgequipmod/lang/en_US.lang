@@ -61,7 +61,8 @@ tile.superiorAnvil.name=Superior Anvil
 item.smithingHammer.name=Smithing Hammer
 
 /** Wands **/
-item.doom_scepter.name=Doom Scepter
+item.wand_doom_scepter.name=Doom Scepter
+item.wand_deadly_force.name=Wand of Deadly Force
 
 /** Commands **/
 commands.clear.gearinventory=Cleared gear inventory for player %s, removing %d items

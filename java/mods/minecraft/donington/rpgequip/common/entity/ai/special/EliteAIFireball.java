@@ -32,8 +32,6 @@ public class EliteAIFireball extends EntityAIBase {
         	if ( entity.isAirBorne ) return false;
     		target = entity.getAttackTarget();
     		if ( target == null ) return false;
-    		if ( !entity.canEntityBeSeen(target) ) return false;
-    		if ( target instanceof EntityPlayer && ((EntityPlayer)target).capabilities.isCreativeMode ) return false;
     		float distance = entity.getDistanceToEntity(target);
     		if ( distance < minimumDistance || distance > maximumDistance ) return false;
 
@@ -67,7 +65,7 @@ public class EliteAIFireball extends EntityAIBase {
 
 		fireballPulse++;
 		if ( fireballPulse > fireballRate ) {
-			entity.worldObj.spawnEntityInWorld(new EntityMagicFire(entity.worldObj, (EntityLivingBase)entity, ptr));
+			entity.worldObj.spawnEntityInWorld(new EntityMagicFire(entity.worldObj, (EntityLivingBase)entity, ptr, 1.0F));
 			fireballPulse = 0;
 		}
 

@@ -8,9 +8,12 @@ import mods.minecraft.donington.rpgequip.common.entity.elite.EliteNameGenerator;
 import mods.minecraft.donington.rpgequip.common.entity.elite.EntityEliteHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.DataWatcher;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityFlying;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.EntityAITasks;
 import net.minecraft.entity.monster.EntityMob;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeModContainer;
@@ -69,7 +72,7 @@ public class EntityEliteMob extends EntityMob {
     protected void applyEntityAttributes() {
         super.applyEntityAttributes();
         //this.getEntityAttribute(SharedMonsterAttributes.followRange).setBaseValue(40.0D);
-        this.getEntityAttribute(SharedMonsterAttributes.movementSpeed).setBaseValue(0.3D);
+        this.getEntityAttribute(SharedMonsterAttributes.movementSpeed).setBaseValue(0.2D);
         this.getEntityAttribute(SharedMonsterAttributes.attackDamage).setBaseValue(3.0D);
     }
 
@@ -84,6 +87,19 @@ public class EntityEliteMob extends EntityMob {
     protected boolean isAIEnabled() {
         return true;
     }
+
+
+	/*
+	@Override
+    protected Entity findPlayerToAttack() {
+		return null;
+	}
+	 */
+	/*
+        EntityPlayer entityplayer = this.worldObj.getClosestVulnerablePlayerToEntity(this, RPGECommonProxy.eliteAggroRange);
+        return entityplayer != null && this.canEntityBeSeen(entityplayer) ? entityplayer : null;
+    }
+     */
 
 
 	@Override
